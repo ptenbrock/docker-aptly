@@ -41,8 +41,19 @@ if [ $(stat -c '%u' ${HOME}) != $USER_ID ]; then
 fi
 
 if [ ! -e ${HOME}/.gnupg ]; then
-    log_warn "Generating new GPG keypair.."
-    [ -e ${HOME}/gpg_batch ] || cat << EOF > ${HOME}/gpg_batch
+    gosu aptly bash -c "mkdir -p ${HOME}/.gnupg"
+    gosu aptly bash -c "echo 'cert-digest-algo SHA256' > ${HOME}/.gnupg/gpg.conf"
+    gosu aptly bash -c "echo 'digest-algo SHA256' >> ${HOME}/.gnupg/gpg.conf"
+
+    if [ -e ${HOME}/private.gpg ]; then
+        gosu aptly bash -c "$GPG_BINARY --import ${HOME}/public.gpg"
+        gosu aptly bash -c "$GPG_BINARY --allow-secret-key-import --import ${HOME}/private.gpg"
+        gosu aptly bash -c "mkdir -p ${HOME}/public"
+        gosu aptly bash -c "cp ${HOME}/public.gpg ${HOME}/public/public.gpg"
+
+    else
+        log_warn "Generating new GPG keypair.."
+        [ -e ${HOME}/gpg_batch ] || cat << EOF > ${HOME}/gpg_batch
 %echo Generating a default key
 Key-Type: RSA
 Key-Length: ${GPG_KEY_LENGTH}
@@ -56,18 +67,20 @@ Expire-Date: 0
 %commit
 %echo done
 EOF
-    gosu aptly bash -c "$GPG_BINARY --batch --gen-key ${HOME}/gpg_batch"
+        gosu aptly bash -c "$GPG_BINARY --batch --gen-key ${HOME}/gpg_batch"
 
-    log_info "Importing distribution keyring.."
-    gosu aptly bash -c "for i in /usr/share/keyrings/*; do $GPG_BINARY --no-default-keyring --keyring \$i --export | $GPG_BINARY --import; done"
+        log_info "Importing distribution keyring.."
+        gosu aptly bash -c "for i in /usr/share/keyrings/*; do $GPG_BINARY --no-default-keyring --keyring \$i --export | $GPG_BINARY --import; done"
 
-    log_info "Storing public key in ${HOME}/public/public.gpg"
-    [ -d ${HOME}/public ] || gosu aptly bash -c "mkdir ${HOME}/public"
-    if [ $(stat -c '%u' ${HOME}/public) != $USER_ID ]; then
-        echo "Fixing ${HOME}/public permissions.." 1>&2
-        chown -R aptly:aptly ${HOME}/public
+        log_info "Storing public key in ${HOME}/public/public.gpg"
+        [ -d ${HOME}/public ] || gosu aptly bash -c "mkdir ${HOME}/public"
+        if [ $(stat -c '%u' ${HOME}/public) != $USER_ID ]; then
+            echo "Fixing ${HOME}/public permissions.." 1>&2
+            chown -R aptly:aptly ${HOME}/public
+        fi
+        [ -e ${HOME}/public/public.gpg ] || gosu aptly bash -c "$GPG_BINARY --armor --export ${EMAIL_ADDRESS} > ${HOME}/public/public.gpg"
     fi
-    [ -e ${HOME}/public/public.gpg ] || gosu aptly bash -c "$GPG_BINARY --armor --export ${EMAIL_ADDRESS} > ${HOME}/public/public.gpg"
+
 fi
 
 exec gosu aptly "$@"

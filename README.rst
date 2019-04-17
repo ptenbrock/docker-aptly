@@ -28,6 +28,17 @@ Environment variables
   exist)
 - **EMAIL_ADDRESS** - Email address for GPG key generation
 
+Alternatively, you can put already existing private and public GPG key inside the
+data folder ``/srv/aptly``.
+
+.. code-block:: bash
+
+    cp ./public.gpg /srv/aptly/public.gpg
+    cp ./private.gpg /srv/aptly/private.gpg
+
+When starting the container, the keys will be imported and can be deleted/moved
+afterwards.
+
 Usage
 -----
 
