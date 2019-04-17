@@ -1,0 +1,23 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:latest
+    container_name: aptly_proxy
+    restart: always
+    depends_on:
+      - aptly_api
+    volumes:
+      - /srv/aptly_proxy/nginx.conf:/etc/nginx/nginx.conf
+      - /srv/aptly_proxy/.htpasswd.aptly:/etc/nginx/.htpasswd.aptly
+      - /srv/aptly_proxy/logs:/etc/nginx/logs
+    ports:
+      - 8080:80
+
+  aptly_api:
+    image: ptenbrock/aptly:latest
+    container_name: aptly_api
+    volumes:
+      - /srv/aptly:/var/lib/aptly
+    command: aptly api serve -no-lock
+    expose:
+      - "8080"

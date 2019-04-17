@@ -58,6 +58,26 @@ Run aptly action, eg. list repos:
     docker exec -it mirantis/aptly aptly repo list
 
 
+aptly-api with basic auth
+=========================
+
+aptly-api can be put behind an nginx proxy for password protection. Set up a
+config folder containing a .htpasswd file for a ``aptly-api`` user.
+
+.. code-block:: bash
+
+    mkdir /srv/aptly_proxy
+    cp docker/files/nginx_proxy.conf /srv/aptly_proxy/nginx.conf
+    htpasswd -c /srv/aptly_proxy/.htpasswd.aptly aptly-api
+
+Startup aptly-api together with the nginx reverse proxy
+
+.. code-block:: bash
+
+    docker-compose -f docker/aptly-proxy-compose.yml up -d
+
+You can now access aptly-api via http://aptly-api:<PASS>@localhost:8080/
+
 aptly-public
 ============
 
