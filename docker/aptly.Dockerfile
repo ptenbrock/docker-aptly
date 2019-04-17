@@ -1,6 +1,4 @@
-FROM debian:stretch
-
-MAINTAINER dev@mirantis.com
+FROM ubuntu:xenial
 
 ARG DIST=squeeze
 ARG APTLY_VERSION=1.3.0
@@ -10,14 +8,12 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -q update                     \
     && apt-get -y install bash-completion \
                           bzip2           \
-                          gnupg1          \
+                          gnupg           \
                           gpgv            \
-                          gpgv1           \
                           graphviz        \
                           wget            \
                           xz-utils        \
                           gosu            \
-                          ubuntu-archive-keyring \
     && echo "deb http://repo.aptly.info/ $DIST main" > /etc/apt/sources.list.d/aptly.list \
     && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ED75B5A4483DA07C \
     && apt-get update \

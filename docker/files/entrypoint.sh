@@ -5,7 +5,7 @@ GROUP_ID=${LOCAL_GROUP_ID:-501}
 FULL_NAME=${FULL_NAME:-"Aptly Repo Signing"}
 EMAIL_ADDRESS=${EMAIL_ADDRESS:-root@localhost}
 GPG_KEY_LENGTH=${GPG_KEY_LENGTH:-4096}
-GPG_BINARY=${GPG_BINARY:-gpg1}
+GPG_BINARY=${GPG_BINARY:-gpg}
 # Syslog numeric log level, see https://tools.ietf.org/html/rfc5424
 # Defaults to warning
 LOG_LEVEL=${LOG_LEVEL:-4}
